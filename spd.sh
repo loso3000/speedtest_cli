@@ -40,7 +40,7 @@ fi
 # 检查节点节点
 check_speedtest_servers(){
 	# 下载所有节点信息
-	curl  https://www.speedtest.net/speedtest-servers-static.php > /tmp/spd_cli/1.txt
+	curl  https://www.speedtest.net/speedtest-servers-static.php  > /tmp/spd_cli/1.txt
 	# 将国内节点剔出来
 	cat /tmp/spd_cli/1.txt | grep cc=\"CN\" | grep -v "Hong Kong" > /tmp/spd_cli/2.txt
 	# 提取 节点ID
@@ -52,28 +52,12 @@ check_speedtest_servers(){
 }
 
 if  [ ! -e '/tmp/spd_cli/1.txt' ]; then
+	rm -rf /tmp/spd_cli
+	
+	mkdir  /tmp/spd_cli
+	chmod  777  /tmp/spd_cli
 	check_speedtest_servers
 fi
-
-clear
-
-echo "————————————————————————speedtest-cli测试端———————————           —————————————————————"
-echo "     项目地址:      https://github.com/user1121114685/speedtest_cli"
-echo "     原脚本地址：https://github.com/ernisn/superspeed"
-echo "     懒人专用，推荐在晚上21:30至凌晨1:00之间测试，高峰期更具有实际意义。"
-echo "——————————————————————————————————————————————————————————————————————"
-echo "     选择测速类型: "
-echo -e "     ${GREEN}1.${PLAIN} 随机5个国内节点测试       ${GREEN}2.${PLAIN} 随机10个国内节点测试       ${GREEN}3.${PLAIN} 指定单个测试节点     "
-echo -e "     ${GREEN}4.${PLAIN} 升级脚本                               ${GREEN}5.${PLAIN} 更新节点信息                         ${GREEN}6.${PLAIN} 展示所有节点"
-
-while :; do echo
-		read -p "     请输入数字选择: " selection
-		if [[ ! $selection =~ ^[1-6]$ ]]; then
-				echo -ne "     ${RED}输入错误${PLAIN}, 请输入正确的数字!"
-		else
-				break   
-		fi
-done
 
 # 判断 系统 运行位数
 	bit=`uname -m`
@@ -84,30 +68,65 @@ done
 
 	fi
 
+# 下载speedtest_cli
+if  [ ! -e '/tmp/spd_cli/speedtest' ]; then
+	wget --no-check-certificate -O /tmp/spd_cli/speedtest  https://raw.githubusercontent.com/user1121114685/speedtest_cli/master/spd_cli/${bit}/speedtest  > /dev/null 2>&1
+	chmod a+rx /tmp/spd_cli/speedtest
+fi
+
+ clear
+
+echo "——————————————————————————————————————————————————————————————————————"
+echo "     "
+echo "     Speedtest_Cli测速"
+echo "     作者：联盟少侠"
+echo "     "
+echo "     项目地址:      https://github.com/user1121114685/speedtest_cli"
+echo "     原脚本地址：https://github.com/ernisn/superspeed"
+echo "     懒人专用，推荐在晚上21:30至凌晨1:00之间测试，高峰期更具有实际意义。"
+echo -e "     ${RED}如遇无限闪屏，请先运行3一次${PLAIN} "
+echo "——————————————————————————————————————————————————————————————————————"
+echo "     "
+echo "     选择菜单: "
+echo -e "     ${GREEN}1.${PLAIN} 随机5个国内节点测试  "
+echo -e "     ${GREEN}2.${PLAIN} 随机10个国内节点测试"
+echo -e "     ${GREEN}3.${PLAIN} 指定单个测试节点     "
+echo -e "     ${GREEN}4.${PLAIN} 升级脚本"
+echo -e "     ${GREEN}5.${PLAIN} 更新节点信息 "
+echo -e "     ${GREEN}6.${PLAIN} 展示所有节点"
+
+while :; do echo
+		read -p "     请输入数字选择(按回车退出): " selection
+		if [[ -z $selection ]]; then
+			exit 0
+		fi
+		if [[ ! $selection =~ ^[1-6]$ ]]; then
+				echo -ne "     ${RED}输入错误${PLAIN}, 请输入正确的数字!"
+		else
+				break   
+		fi
+done
+
+
 
 # install speedtest
 if  [ ! -e '/tmp/spd_cli/speedtest' ]; then
 	wget --no-check-certificate -P tmp/spd_cli  https://raw.githubusercontent.com/user1121114685/speedtest_cli/master/spd_cli/${bit}/speedtest  > /dev/null 2>&1
+	chmod a+rx /tmp/spd_cli/speedtest
 fi
-chmod a+rx /tmp/spd_cli/speedtest
 
-speed_test(){
-	/tmp/spd_cli/speedtest -s $1
-	echo "——————————————————————————————————————————————————————————————————————"
 
-}
 
 # 5个节点测试
 if [[ ${selection} == 1 ]]; then
 	echo "——————————————————————————————————————————————————————————————————————"
-		speedtest_cli_id=`cat /tmp/spd_cli/3.txt | shuf -n5`
 
 	start=$(date +%s) 
 
-	for ((i=0;i<6;i++))
-		{ 
-			speed_test speedtest_cli_id[$i]
-		}
+		echo "——————————————————————————————————————————————————————————————————————"
+
+			cat /tmp/spd_cli/3.txt | shuf -n5 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1
+
 	end=$(date +%s)  
 
 	echo "——————————————————————————————————————————————————————————————————————"
@@ -126,14 +145,13 @@ fi
 # 10 个节点测试
 if [[ ${selection} == 2 ]]; then
 	echo "——————————————————————————————————————————————————————————————————————"
-		speedtest_cli_id=`cat /tmp/spd_cli/3.txt | shuf -n10`
 
 	start=$(date +%s) 
 
-	for ((i=0;i<11;i++))
-		{ 
-			speed_test speedtest_cli_id[$i]
-		}
+		echo "——————————————————————————————————————————————————————————————————————"
+
+		cat /tmp/spd_cli/3.txt | shuf -n10 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1
+
 	end=$(date +%s)  
 
 	echo "——————————————————————————————————————————————————————————————————————"
@@ -153,13 +171,15 @@ fi
 # 单个节点测试
 if [[ ${selection} == 3 ]]; then
 	echo "——————————————————————————————————————————————————————————————————————"
-	read -p "     请输入一个节点ID: " selection
+	read -p "     请输入一个节点ID(可直接回车): " selection
 
 	start=$(date +%s) 
 
-
-	speed_test speedtest_cli_id[$selection]
-
+	if [[ -z $selection ]]; then
+		/tmp/spd_cli/speedtest
+	else
+		/tmp/spd_cli/speedtest -s [$selection]
+	fi
 	end=$(date +%s)  
 
 	echo "——————————————————————————————————————————————————————————————————————"

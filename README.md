@@ -16,7 +16,7 @@ Superspeed.sh with updated server lists.
 #### 欢迎各位大佬指点，和修正，小白复制拷贝的。
 
 
-![目前版本截图](https://github.com/user1121114685/baidupcsweb/blob/master/20181203230829.png?raw=true "后续更新可能还会有更新！")
+![目前版本截图](https://raw.githubusercontent.com/user1121114685/speedtest_cli/master/Screenshot_20200221-225354.jpg"后续更新可能还会有更新！")
 
 
 ---
