@@ -1,5 +1,5 @@
-## Superspeed
-Superspeed.sh with updated server lists.
+## speedtest_cli 测速
+本脚本改自 https://github.com/ernisn/superspeed
 
 ## speedtest-cli 官方地址
 `https://www.speedtest.net/apps/cli`本脚从superspeed中修改而来，其实是我太懒，不愿意多折腾superspeed作者写的挺好的，就拿过来了。
@@ -16,7 +16,7 @@ Superspeed.sh with updated server lists.
 #### 欢迎各位大佬指点，和修正，小白复制拷贝的。
 
 
-![目前版本截图](https://raw.githubusercontent.com/user1121114685/speedtest_cli/master/Screenshot_20200221-225354.jpg"后续更新可能还会有更新！")
+![目前版本截图](https://raw.githubusercontent.com/user1121114685/speedtest_cli/master/Screenshot_20200221-225354.jpg "后续更新可能还会有更新！")
 
 
 ---
