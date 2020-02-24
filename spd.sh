@@ -11,7 +11,7 @@ PLAIN='\033[0m'
 
 
 #  版本信息 用于更新脚本
-SH_VER="1.0"
+SH_VER="1.0.1"
 
 # check root
 [[ $EUID -ne 0 ]] && echo -e "${RED}Error:${PLAIN} 请用root权限运行脚本！" && exit 1
@@ -178,7 +178,7 @@ if [[ ${selection} == 3 ]]; then
 	if [[ -z $selection ]]; then
 		/tmp/spd_cli/speedtest
 	else
-		/tmp/spd_cli/speedtest -s [$selection]
+		/tmp/spd_cli/speedtest -s $selection
 	fi
 	end=$(date +%s)  
 
