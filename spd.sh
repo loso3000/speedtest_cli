@@ -11,7 +11,7 @@ PLAIN='\033[0m'
 
 
 #  版本信息 用于更新脚本
-SH_VER="1.0.1"
+SH_VER="1.0.2"
 
 # check root
 [[ $EUID -ne 0 ]] && echo -e "${RED}Error:${PLAIN} 请用root权限运行脚本！" && exit 1
@@ -74,17 +74,25 @@ if  [ ! -e '/tmp/spd_cli/speedtest' ]; then
 	chmod a+rx /tmp/spd_cli/speedtest
 fi
 
- clear
+if  [ ! -e '/tmp/spd_cli/run_once_speedtest' ]; then
+	/tmp/spd_cli/speedtest 
+	echo 1 > /tmp/spd_cli/run_once_speedtest
+
+fi
+
+clear
 
 echo "——————————————————————————————————————————————————————————————————————"
 echo "     "
 echo "     Speedtest_Cli测速"
 echo "     作者：联盟少侠"
 echo "     "
-echo "     项目地址:      https://github.com/user1121114685/speedtest_cli"
+echo "     项目地址:   https://github.com/user1121114685/speedtest_cli"
 echo "     原脚本地址：https://github.com/ernisn/superspeed"
 echo "     懒人专用，推荐在晚上21:30至凌晨1:00之间测试，高峰期更具有实际意义。"
+echo "     "
 echo -e "     ${RED}如遇无限闪屏，请先运行3一次${PLAIN} "
+echo "     "
 echo "——————————————————————————————————————————————————————————————————————"
 echo "     "
 echo "     选择菜单: "
@@ -94,13 +102,15 @@ echo -e "     ${GREEN}3.${PLAIN} 指定单个测试节点     "
 echo -e "     ${GREEN}4.${PLAIN} 升级脚本"
 echo -e "     ${GREEN}5.${PLAIN} 更新节点信息 "
 echo -e "     ${GREEN}6.${PLAIN} 展示所有节点"
+echo -e "     ${GREEN}7.${PLAIN} 查看历史测速记录"
+echo -e "     ${GREEN}8.${PLAIN} 旋转跳跃，不停的测速"
 
 while :; do echo
 		read -p "     请输入数字选择(按回车退出): " selection
 		if [[ -z $selection ]]; then
 			exit 0
 		fi
-		if [[ ! $selection =~ ^[1-6]$ ]]; then
+		if [[ ! $selection =~ ^[1-8]$ ]]; then
 				echo -ne "     ${RED}输入错误${PLAIN}, 请输入正确的数字!"
 		else
 				break   
@@ -125,21 +135,21 @@ if [[ ${selection} == 1 ]]; then
 
 		echo "——————————————————————————————————————————————————————————————————————"
 
-			cat /tmp/spd_cli/3.txt | shuf -n5 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1
+			cat /tmp/spd_cli/3.txt | shuf -n5 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1 | tee -a /tmp/spd_cli/report.txt
 
 	end=$(date +%s)  
 
-	echo "——————————————————————————————————————————————————————————————————————"
+	echo -ne "\n  ——————————————————————————————————————————————————————————————————————" | tee -a /tmp/spd_cli/report.txt
 	time=$(( $end - $start ))
 	if [[ $time -gt 60 ]]; then
 		min=$(expr $time / 60)
 		sec=$(expr $time % 60)
-		echo -ne "     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒"
+		echo -ne "     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
 	else
-		echo -ne "     测试完成, 本次测速耗时: ${time} 秒"
+		echo -ne "     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
-	echo -ne "\n     当前时间: "
-	echo $(date +%Y-%m-%d" "%H:%M:%S)
+	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
+	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 fi
 
 # 10 个节点测试
@@ -150,21 +160,21 @@ if [[ ${selection} == 2 ]]; then
 
 		echo "——————————————————————————————————————————————————————————————————————"
 
-		cat /tmp/spd_cli/3.txt | shuf -n10 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1
+		cat /tmp/spd_cli/3.txt | shuf -n10 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1 | tee -a /tmp/spd_cli/report.txt
 
 	end=$(date +%s)  
 
-	echo "——————————————————————————————————————————————————————————————————————"
+	echo -ne "\n   ——————————————————————————————————————————————————————————————————————" | tee -a /tmp/spd_cli/report.txt
 	time=$(( $end - $start ))
 	if [[ $time -gt 60 ]]; then
 		min=$(expr $time / 60)
 		sec=$(expr $time % 60)
-		echo -ne "     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒"
+		echo -ne "     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
 	else
-		echo -ne "     测试完成, 本次测速耗时: ${time} 秒"
+		echo -ne "     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
-	echo -ne "\n     当前时间: "
-	echo $(date +%Y-%m-%d" "%H:%M:%S)
+	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
+	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 fi
 
 
@@ -176,23 +186,23 @@ if [[ ${selection} == 3 ]]; then
 	start=$(date +%s) 
 
 	if [[ -z $selection ]]; then
-		/tmp/spd_cli/speedtest
+		/tmp/spd_cli/speedtest | tee -a /tmp/spd_cli/report.txt
 	else
-		/tmp/spd_cli/speedtest -s $selection
+		/tmp/spd_cli/speedtest -s $selection | tee -a /tmp/spd_cli/report.txt
 	fi
 	end=$(date +%s)  
 
-	echo "——————————————————————————————————————————————————————————————————————"
+	echo -ne "\n  ——————————————————————————————————————————————————————————————————————" | tee -a /tmp/spd_cli/report.txt
 	time=$(( $end - $start ))
 	if [[ $time -gt 60 ]]; then
 		min=$(expr $time / 60)
 		sec=$(expr $time % 60)
-		echo -ne "     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒"
+		echo -ne "     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
 	else
-		echo -ne "     测试完成, 本次测速耗时: ${time} 秒"
+		echo -ne "     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
-	echo -ne "\n     当前时间: "
-	echo $(date +%Y-%m-%d" "%H:%M:%S)
+	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
+	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 
 fi
 
@@ -235,4 +245,39 @@ fi
 # 展示所有的国内节点
 if [[ ${selection} == 6 ]]; then
 	paste -d" ----" /tmp/spd_cli/3.txt /tmp/spd_cli/4.txt /tmp/spd_cli/5.txt
+fi
+
+# 展示所有的历史记录
+if [[ ${selection} == 7 ]]; then
+	cat /tmp/spd_cli/report.txt
+fi
+# 不停的测速，直到天荒地老
+if [[ ${selection} == 8 ]]; then
+	while :
+	do
+
+		echo "——————————————————————————————————————————————————————————————————————"
+
+		start=$(date +%s) 
+
+			echo "——————————————————————————————————————————————————————————————————————"
+
+				cat /tmp/spd_cli/3.txt | shuf -n5 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1 | tee -a /tmp/spd_cli/report.txt
+
+		end=$(date +%s)  
+
+		echo -ne "\n  ——————————————————————————————————————————————————————————————————————" | tee -a /tmp/spd_cli/report.txt
+		time=$(( $end - $start ))
+		if [[ $time -gt 60 ]]; then
+			min=$(expr $time / 60)
+			sec=$(expr $time % 60)
+			echo -ne "     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
+		else
+			echo -ne "     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
+		fi
+		echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
+		echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+
+
+	done
 fi
