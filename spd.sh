@@ -11,12 +11,13 @@ PLAIN='\033[0m'
 
 
 #  版本信息 用于更新脚本
-SH_VER="1.0.2"
+SH_VER="1.0.3"
 
 # check root
 [[ $EUID -ne 0 ]] && echo -e "${RED}Error:${PLAIN} 请用root权限运行脚本！" && exit 1
 
-#  https://www.speedtest.net/speedtest-servers-static.php
+#  https://www.speedtest.net/speedtest-servers-static.php  中国居然从上面消失了.....
+# https://www.speedtest.net/api/js/servers?search=China&limit=500
 
 # check wget
 if  [ ! -e '/usr/bin/wget' ]; then
@@ -37,18 +38,34 @@ if  [ ! -e '/usr/bin/curl' ]; then
 	fi
 fi
 
+# check jq
+if  [ ! -e '/usr/bin/jq' ]; then
+	if [ "${release}" == "centos" ]; then
+			# yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+			yum -y install jq 
+	else
+			apt-get -y install jq
+	fi
+fi
 # 检查节点节点
 check_speedtest_servers(){
 	# 下载所有节点信息
-	curl  https://www.speedtest.net/speedtest-servers-static.php  > /tmp/spd_cli/1.txt
+	curl --header "Content-Type:application/json" 'https://www.speedtest.net/api/js/servers?search=China&limit=500'  > /tmp/spd_cli/1.txt
+	cat /tmp/spd_cli/1.txt | jq . > /tmp/spd_cli/newservers.txt
 	# 将国内节点剔出来
-	cat /tmp/spd_cli/1.txt | grep cc=\"CN\" | grep -v "Hong Kong" > /tmp/spd_cli/2.txt
+	sed -i '/Hong\ Kong/,+6d' /tmp/spd_cli/newservers.txt
+
+#	cat /tmp/spd_cli/newservers.txt | grep cc=\"CN\" | grep -v "Hong Kong" > /tmp/spd_cli/2.txt
 	# 提取 节点ID
-	cat /tmp/spd_cli/2.txt | awk -F "=" '{print $9}' | awk -F "\"" '{print $2}'  > /tmp/spd_cli/3.txt
+	#cat /tmp/spd_cli/2.txt | awk -F "=" '{print $9}' | awk -F "\"" '{print $2}'  > /tmp/spd_cli/3.txt
+	cat /tmp/spd_cli/newservers.txt | jq ".[].id" | sed 's/"//g'| sed '/null/d' > /tmp/spd_cli/3.txt # jq 中 . 表示当前 [] 表示数组 .id 表示目录下的id
 	# 提取节点地区
-	cat /tmp/spd_cli/2.txt | awk -F "=" '{print $5}' | awk -F "\"" '{print $2}'  > /tmp/spd_cli/4.txt
+	cat /tmp/spd_cli/newservers.txt | jq ".[].name" | sed 's/"//g'| sed '/null/d' > /tmp/spd_cli/4.txt
+
+	#cat /tmp/spd_cli/2.txt | awk -F "=" '{print $5}' | awk -F "\"" '{print $2}'  > /tmp/spd_cli/4.txt
 	# 提取 节点运营商 
-	cat /tmp/spd_cli/2.txt | awk -F "=" '{print $8}' | awk -F "\"" '{print $2}'  > /tmp/spd_cli/5.txt
+	cat /tmp/spd_cli/newservers.txt | jq ".[].sponsor" | sed 's/"//g'| sed '/null/d' > /tmp/spd_cli/5.txt
+	# cat /tmp/spd_cli/2.txt | awk -F "=" '{print $8}' | awk -F "\"" '{print $2}'  > /tmp/spd_cli/5.txt
 }
 
 if  [ ! -e '/tmp/spd_cli/1.txt' ]; then
@@ -84,7 +101,7 @@ clear
 
 echo "——————————————————————————————————————————————————————————————————————"
 echo "     "
-echo "     Speedtest_Cli测速"
+echo "     Speedtest_Cli测速     ${SH_VER}"
 echo "     作者：联盟少侠"
 echo "     "
 echo "     项目地址:   https://github.com/user1121114685/speedtest_cli"
