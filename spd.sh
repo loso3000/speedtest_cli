@@ -11,7 +11,7 @@ PLAIN='\033[0m'
 
 
 #  版本信息 用于更新脚本
-SH_VER="1.0.3"
+SH_VER="1.0.4"
 
 # check root
 [[ $EUID -ne 0 ]] && echo -e "${RED}Error:${PLAIN} 请用root权限运行脚本！" && exit 1
@@ -66,9 +66,29 @@ check_speedtest_servers(){
 	# 提取 节点运营商 
 	cat /tmp/spd_cli/newservers.txt | jq ".[].sponsor" | sed 's/"//g'| sed '/null/d' > /tmp/spd_cli/5.txt
 	# cat /tmp/spd_cli/2.txt | awk -F "=" '{print $8}' | awk -F "\"" '{print $2}'  > /tmp/spd_cli/5.txt
+
+	# 分别提取三网存放
+	# 合并处理
+	paste -d" ----" /tmp/spd_cli/3.txt /tmp/spd_cli/4.txt /tmp/spd_cli/5.txt > /tmp/spd_cli/6.txt
+	# 找到 Telecom 或者包含 电信  的行
+	cat /tmp/spd_cli/6.txt | grep -E -i 'Telecom|电信' | sed 's/ .*//g'> /tmp/spd_cli/Telecom.txt
+	# 找到 Unicom 或者包含 联通  的行
+	cat /tmp/spd_cli/6.txt | grep -E -i 'Unicom|联通' | sed 's/ .*//g'> /tmp/spd_cli/Unicom.txt
+	# 找到 Mobile 或者包含 移动  的行
+	cat /tmp/spd_cli/6.txt | grep -E -i 'Mobile|移动' | sed 's/ .*//g'> /tmp/spd_cli/Mobile.txt
+
 }
 
 if  [ ! -e '/tmp/spd_cli/1.txt' ]; then
+	rm -rf /tmp/spd_cli
+	
+	mkdir  /tmp/spd_cli
+	chmod  777  /tmp/spd_cli
+	check_speedtest_servers
+fi
+
+
+if  [ ! -e '/tmp/spd_cli/Telecom.txt' ]; then
 	rm -rf /tmp/spd_cli
 	
 	mkdir  /tmp/spd_cli
@@ -99,35 +119,44 @@ fi
 
 clear
 
-echo "——————————————————————————————————————————————————————————————————————"
 echo "     "
-echo "     Speedtest_Cli测速     ${SH_VER}"
-echo "     作者：联盟少侠"
+echo -e "     联盟少侠  Speedtest_Cli测速    ${RED} ${SH_VER} ${PLAIN}  "
 echo "     "
 echo "     项目地址:   https://github.com/user1121114685/speedtest_cli"
 echo "     原脚本地址：https://github.com/ernisn/superspeed"
 echo "     懒人专用，推荐在晚上21:30至凌晨1:00之间测试，高峰期更具有实际意义。"
 echo "     "
-echo -e "     ${RED}如遇无限闪屏，请先运行3一次${PLAIN} "
+echo -e "     ${RED}如遇无限闪屏，请先运行 9 一次${PLAIN} "
 echo "     "
 echo "——————————————————————————————————————————————————————————————————————"
 echo "     "
 echo "     选择菜单: "
-echo -e "     ${GREEN}1.${PLAIN} 随机5个国内节点测试  "
-echo -e "     ${GREEN}2.${PLAIN} 随机10个国内节点测试"
-echo -e "     ${GREEN}3.${PLAIN} 指定单个测试节点     "
-echo -e "     ${GREEN}4.${PLAIN} 升级脚本"
-echo -e "     ${GREEN}5.${PLAIN} 更新节点信息 "
-echo -e "     ${GREEN}6.${PLAIN} 展示所有节点"
-echo -e "     ${GREEN}7.${PLAIN} 查看历史测速记录"
-echo -e "     ${GREEN}8.${PLAIN} 旋转跳跃，不停的测速"
+echo ""
+echo -e "     ${GREEN}1.${PLAIN} 随机5个全网国内节点测试  "
+echo -e "     ${GREEN}2.${PLAIN} 随机5个电信国内节点测试  "
+echo -e "     ${GREEN}3.${PLAIN} 随机5个联通国内节点测试  "
+echo -e "     ${GREEN}4.${PLAIN} 随机5个移动国内节点测试  "
+echo ""
+echo -e "     ${GREEN}5.${PLAIN} 随机10个全网国内节点测试"
+echo -e "     ${GREEN}6.${PLAIN} 随机10个电信国内节点测试  "
+echo -e "     ${GREEN}7.${PLAIN} 随机10个联通国内节点测试  "
+echo -e "     ${GREEN}8.${PLAIN} 随机10个移动国内节点测试  "
+echo ""
+echo -e "     ${GREEN}9.${PLAIN} 指定单个测试节点     "
+echo -e "     ${GREEN}10.${PLAIN} 旋转跳跃，不停的测速"
+echo ""
+echo -e "     ${GREEN}11.${PLAIN} 更新节点信息 "
+echo -e "     ${GREEN}12.${PLAIN} 展示所有节点"
+echo -e "     ${GREEN}13.${PLAIN} 查看历史测速记录"
+echo -e "     ${GREEN}14.${PLAIN} 升级脚本"
+
 
 while :; do echo
 		read -p "     请输入数字选择(按回车退出): " selection
 		if [[ -z $selection ]]; then
 			exit 0
 		fi
-		if [[ ! $selection =~ ^[1-8]$ ]]; then
+		if [[ ! $selection =~ [1-9]|[1-9][0-4] ]]; then
 				echo -ne "     ${RED}输入错误${PLAIN}, 请输入正确的数字!"
 		else
 				break   
@@ -144,7 +173,7 @@ fi
 
 
 
-# 5个节点测试
+# 5个全网节点测试
 if [[ ${selection} == 1 ]]; then
 	echo "——————————————————————————————————————————————————————————————————————"
 
@@ -161,16 +190,91 @@ if [[ ${selection} == 1 ]]; then
 	if [[ $time -gt 60 ]]; then
 		min=$(expr $time / 60)
 		sec=$(expr $time % 60)
-		echo -ne "     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
+		echo -ne "\n     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
 	else
-		echo -ne "     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
+		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 fi
 
-# 10 个节点测试
+# 5个电信节点测试
 if [[ ${selection} == 2 ]]; then
+	echo "——————————————————————————————————————————————————————————————————————"
+
+	start=$(date +%s) 
+
+		echo "——————————————————————————————————————————————————————————————————————"
+
+			cat /tmp/spd_cli/Telecom.txt | shuf -n5 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1 | tee -a /tmp/spd_cli/report.txt
+
+	end=$(date +%s)  
+
+	echo -ne "\n  ——————————————————————————————————————————————————————————————————————" | tee -a /tmp/spd_cli/report.txt
+	time=$(( $end - $start ))
+	if [[ $time -gt 60 ]]; then
+		min=$(expr $time / 60)
+		sec=$(expr $time % 60)
+		echo -ne "\n     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
+	else
+		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
+	fi
+	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
+	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+fi
+
+# 5个联通节点测试
+if [[ ${selection} == 3 ]]; then
+	echo "——————————————————————————————————————————————————————————————————————"
+
+	start=$(date +%s) 
+
+		echo "——————————————————————————————————————————————————————————————————————"
+
+			cat /tmp/spd_cli/Unicom.txt | shuf -n5 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1 | tee -a /tmp/spd_cli/report.txt
+
+	end=$(date +%s)  
+
+	echo -ne "\n  ——————————————————————————————————————————————————————————————————————" | tee -a /tmp/spd_cli/report.txt
+	time=$(( $end - $start ))
+	if [[ $time -gt 60 ]]; then
+		min=$(expr $time / 60)
+		sec=$(expr $time % 60)
+		echo -ne "\n     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
+	else
+		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
+	fi
+	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
+	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+fi
+
+# 5个移动节点测试
+if [[ ${selection} == 4 ]]; then
+	echo "——————————————————————————————————————————————————————————————————————"
+
+	start=$(date +%s) 
+
+		echo "——————————————————————————————————————————————————————————————————————"
+
+			cat /tmp/spd_cli/Mobile.txt | shuf -n5 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1 | tee -a /tmp/spd_cli/report.txt
+
+	end=$(date +%s)  
+
+	echo -ne "\n  ——————————————————————————————————————————————————————————————————————" | tee -a /tmp/spd_cli/report.txt
+	time=$(( $end - $start ))
+	if [[ $time -gt 60 ]]; then
+		min=$(expr $time / 60)
+		sec=$(expr $time % 60)
+		echo -ne "\n     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
+	else
+		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
+	fi
+	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
+	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+fi
+
+# 10 个全网节点测试
+if [[ ${selection} == 5 ]]; then
 	echo "——————————————————————————————————————————————————————————————————————"
 
 	start=$(date +%s) 
@@ -186,17 +290,91 @@ if [[ ${selection} == 2 ]]; then
 	if [[ $time -gt 60 ]]; then
 		min=$(expr $time / 60)
 		sec=$(expr $time % 60)
-		echo -ne "     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
+		echo -ne "\n     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
 	else
-		echo -ne "     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
+		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 fi
 
+# 10个电信节点测试
+if [[ ${selection} == 6 ]]; then
+	echo "——————————————————————————————————————————————————————————————————————"
+
+	start=$(date +%s) 
+
+		echo "——————————————————————————————————————————————————————————————————————"
+
+			cat /tmp/spd_cli/Telecom.txt | shuf -n10 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1 | tee -a /tmp/spd_cli/report.txt
+
+	end=$(date +%s)  
+
+	echo -ne "\n  ——————————————————————————————————————————————————————————————————————" | tee -a /tmp/spd_cli/report.txt
+	time=$(( $end - $start ))
+	if [[ $time -gt 60 ]]; then
+		min=$(expr $time / 60)
+		sec=$(expr $time % 60)
+		echo -ne "\n     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
+	else
+		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
+	fi
+	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
+	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+fi
+
+# 10个联通节点测试
+if [[ ${selection} == 7 ]]; then
+	echo "——————————————————————————————————————————————————————————————————————"
+
+	start=$(date +%s) 
+
+		echo "——————————————————————————————————————————————————————————————————————"
+
+			cat /tmp/spd_cli/Unicom.txt | shuf -n10 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1 | tee -a /tmp/spd_cli/report.txt
+
+	end=$(date +%s)  
+
+	echo -ne "\n  ——————————————————————————————————————————————————————————————————————" | tee -a /tmp/spd_cli/report.txt
+	time=$(( $end - $start ))
+	if [[ $time -gt 60 ]]; then
+		min=$(expr $time / 60)
+		sec=$(expr $time % 60)
+		echo -ne "\n     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
+	else
+		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
+	fi
+	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
+	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+fi
+
+# 10个移动节点测试
+if [[ ${selection} == 8 ]]; then
+	echo "——————————————————————————————————————————————————————————————————————"
+
+	start=$(date +%s) 
+
+		echo "——————————————————————————————————————————————————————————————————————"
+
+			cat /tmp/spd_cli/Mobile.txt | shuf -n10 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1 | tee -a /tmp/spd_cli/report.txt
+
+	end=$(date +%s)  
+
+	echo -ne "\n  ——————————————————————————————————————————————————————————————————————" | tee -a /tmp/spd_cli/report.txt
+	time=$(( $end - $start ))
+	if [[ $time -gt 60 ]]; then
+		min=$(expr $time / 60)
+		sec=$(expr $time % 60)
+		echo -ne "\n     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
+	else
+		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
+	fi
+	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
+	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+fi
 
 # 单个节点测试
-if [[ ${selection} == 3 ]]; then
+if [[ ${selection} == 9 ]]; then
 	echo "——————————————————————————————————————————————————————————————————————"
 	read -p "     请输入一个节点ID(可直接回车): " selection
 
@@ -214,17 +392,64 @@ if [[ ${selection} == 3 ]]; then
 	if [[ $time -gt 60 ]]; then
 		min=$(expr $time / 60)
 		sec=$(expr $time % 60)
-		echo -ne "     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
+		echo -ne "\n     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
 	else
-		echo -ne "     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
+		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 
 fi
 
+# 不停的测速，直到天荒地老
+if [[ ${selection} == 10 ]]; then
+	while :
+	do
+
+		echo "——————————————————————————————————————————————————————————————————————"
+
+		start=$(date +%s) 
+
+			echo "——————————————————————————————————————————————————————————————————————"
+
+				cat /tmp/spd_cli/3.txt | shuf -n5 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1 | tee -a /tmp/spd_cli/report.txt
+
+		end=$(date +%s)  
+
+		echo -ne "\n  ——————————————————————————————————————————————————————————————————————" | tee -a /tmp/spd_cli/report.txt
+		time=$(( $end - $start ))
+		if [[ $time -gt 60 ]]; then
+			min=$(expr $time / 60)
+			sec=$(expr $time % 60)
+			echo -ne "\n     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
+		else
+			echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
+		fi
+		echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
+		echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+
+
+	done
+fi
+
+#  手动更新节点信息
+if [[ ${selection} == 11 ]]; then
+	check_speedtest_servers
+
+fi
+
+# 展示所有的国内节点
+if [[ ${selection} == 12 ]]; then
+	paste -d" ----" /tmp/spd_cli/3.txt /tmp/spd_cli/4.txt /tmp/spd_cli/5.txt
+fi
+
+# 展示所有的历史记录
+if [[ ${selection} == 13 ]]; then
+	cat /tmp/spd_cli/report.txt
+fi
+
 #  脚本更新
-if [[ ${selection} == 4 ]]; then
+if [[ ${selection} == 14 ]]; then
 
 	latest_version=$(curl -H 'Cache-Control: no-cache' -s -L "https://raw.githubusercontent.com/user1121114685/speedtest_cli/master/spd.sh" | grep 'SH_VER' -m1 | cut -d\" -f2)
 	if [[ ! $latest_version ]]; then
@@ -251,50 +476,4 @@ if [[ ${selection} == 4 ]]; then
 	fi
 
 	
-fi
-
-#  手动更新节点信息
-if [[ ${selection} == 5 ]]; then
-	check_speedtest_servers
-
-fi
-
-# 展示所有的国内节点
-if [[ ${selection} == 6 ]]; then
-	paste -d" ----" /tmp/spd_cli/3.txt /tmp/spd_cli/4.txt /tmp/spd_cli/5.txt
-fi
-
-# 展示所有的历史记录
-if [[ ${selection} == 7 ]]; then
-	cat /tmp/spd_cli/report.txt
-fi
-# 不停的测速，直到天荒地老
-if [[ ${selection} == 8 ]]; then
-	while :
-	do
-
-		echo "——————————————————————————————————————————————————————————————————————"
-
-		start=$(date +%s) 
-
-			echo "——————————————————————————————————————————————————————————————————————"
-
-				cat /tmp/spd_cli/3.txt | shuf -n5 | xargs -n 1  /tmp/spd_cli/speedtest -s  $1 | tee -a /tmp/spd_cli/report.txt
-
-		end=$(date +%s)  
-
-		echo -ne "\n  ——————————————————————————————————————————————————————————————————————" | tee -a /tmp/spd_cli/report.txt
-		time=$(( $end - $start ))
-		if [[ $time -gt 60 ]]; then
-			min=$(expr $time / 60)
-			sec=$(expr $time % 60)
-			echo -ne "     测试完成, 本次测速耗时: ${min} 分 ${sec} 秒" | tee -a /tmp/spd_cli/report.txt
-		else
-			echo -ne "     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
-		fi
-		echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
-		echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
-
-
-	done
 fi
