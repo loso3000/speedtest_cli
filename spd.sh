@@ -11,7 +11,8 @@ PLAIN='\033[0m'
 
 
 #  版本信息 用于更新脚本
-SH_VER="1.0.5"
+SH_VER="1.0.6"
+
 
 # check root
 [[ $EUID -ne 0 ]] && echo -e "${RED}Error:${PLAIN} 请用root权限运行脚本！" && exit 1
@@ -171,7 +172,17 @@ if  [ ! -e '/tmp/spd_cli/speedtest' ]; then
 	chmod a+rx /tmp/spd_cli/speedtest
 fi
 
-
+# 格式化输出
+format_output(){
+	rm -f /tmp/spd_cli/format_output*
+	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/Server/ {print $2}' | sed 's/$/\//' > /tmp/spd_cli/format_output1.txt
+	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/Latency/ {print $2}' | sed 's/$/\//' > /tmp/spd_cli/format_output2.txt
+	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/Download/ {print $2}' | sed 's/$/\//' > /tmp/spd_cli/format_output3.txt
+	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/Upload/ {print $2}' | sed 's/$/\//' > /tmp/spd_cli/format_output4.txt
+	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/PacketLoss/ {print $2}' > /tmp/spd_cli/format_output5.txt
+	clear
+	paste /tmp/spd_cli/format_output1.txt /tmp/spd_cli/format_output2.txt /tmp/spd_cli/format_output3.txt /tmp/spd_cli/format_output4.txt /tmp/spd_cli/format_output5.txt | sed 's/jitter/抖动/g' | sed 's/Notavailable\./不可用/g' | sed 's/(dataused//g' | sed '1 i\服务器/延迟/下载/上传（最重要）/丢包' | column -t -s ‘/’
+}
 
 # 5个全网节点测试
 if [[ ${selection} == 1 ]]; then
@@ -194,8 +205,13 @@ if [[ ${selection} == 1 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
+	format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
+	# 删除临时文件
+	rm -f /tmp/spd_cli/report.txt
+
 fi
 
 # 5个电信节点测试
@@ -219,8 +235,13 @@ if [[ ${selection} == 2 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
+	format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
+	# 删除临时文件
+	rm -f /tmp/spd_cli/report.txt
+
 fi
 
 # 5个联通节点测试
@@ -244,8 +265,12 @@ if [[ ${selection} == 3 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
+	format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
+	# 删除临时文件
+	rm -f /tmp/spd_cli/report.txt
 fi
 
 # 5个移动节点测试
@@ -269,8 +294,12 @@ if [[ ${selection} == 4 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
+	format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
+	# 删除临时文件
+	rm -f /tmp/spd_cli/report.txt
 fi
 
 # 10 个全网节点测试
@@ -294,8 +323,12 @@ if [[ ${selection} == 5 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
+	format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
+	# 删除临时文件
+	rm -f /tmp/spd_cli/report.txt
 fi
 
 # 10个电信节点测试
@@ -319,8 +352,12 @@ if [[ ${selection} == 6 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
+	format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
+	# 删除临时文件
+	rm -f /tmp/spd_cli/report.txt
 fi
 
 # 10个联通节点测试
@@ -344,8 +381,12 @@ if [[ ${selection} == 7 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
+	format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
+	# 删除临时文件
+	rm -f /tmp/spd_cli/report.txt
 fi
 
 # 10个移动节点测试
@@ -369,8 +410,12 @@ if [[ ${selection} == 8 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
+	format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
+	# 删除临时文件
+	rm -f /tmp/spd_cli/report.txt
 fi
 
 # 单个节点测试
@@ -396,8 +441,12 @@ if [[ ${selection} == 9 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
+	format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
+	# 删除临时文件
+	rm -f /tmp/spd_cli/report.txt
 
 fi
 
@@ -425,8 +474,12 @@ if [[ ${selection} == 10 ]]; then
 		else
 			echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 		fi
+		format_output
 		echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 		echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
+		cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
+		# 删除临时文件
+		rm -f /tmp/spd_cli/report.txt
 
 
 	done
@@ -445,7 +498,7 @@ fi
 
 # 展示所有的历史记录
 if [[ ${selection} == 13 ]]; then
-	cat /tmp/spd_cli/report.txt
+	cat /tmp/spd_cli/reportAll.txt
 fi
 
 #  脚本更新
