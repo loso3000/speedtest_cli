@@ -11,7 +11,7 @@ PLAIN='\033[0m'
 
 
 #  版本信息 用于更新脚本
-SH_VER="1.0.4"
+SH_VER="1.0.5"
 
 # check root
 [[ $EUID -ne 0 ]] && echo -e "${RED}Error:${PLAIN} 请用root权限运行脚本！" && exit 1
@@ -71,11 +71,11 @@ check_speedtest_servers(){
 	# 合并处理
 	paste -d" ----" /tmp/spd_cli/3.txt /tmp/spd_cli/4.txt /tmp/spd_cli/5.txt > /tmp/spd_cli/6.txt
 	# 找到 Telecom 或者包含 电信  的行
-	cat /tmp/spd_cli/6.txt | grep -E -i 'Telecom|电信' | sed 's/ .*//g'> /tmp/spd_cli/Telecom.txt
+	cat /tmp/spd_cli/6.txt | grep -E -i 'Telecom|电信' | sed 's/ .*//g' > /tmp/spd_cli/Telecom.txt
 	# 找到 Unicom 或者包含 联通  的行
-	cat /tmp/spd_cli/6.txt | grep -E -i 'Unicom|联通' | sed 's/ .*//g'> /tmp/spd_cli/Unicom.txt
+	cat /tmp/spd_cli/6.txt | grep -E -i 'Unicom|联通' | sed 's/ .*//g' > /tmp/spd_cli/Unicom.txt
 	# 找到 Mobile 或者包含 移动  的行
-	cat /tmp/spd_cli/6.txt | grep -E -i 'Mobile|移动' | sed 's/ .*//g'> /tmp/spd_cli/Mobile.txt
+	cat /tmp/spd_cli/6.txt | grep -E -i 'Mobile|移动|CMCC' | sed 's/ .*//g' > /tmp/spd_cli/Mobile.txt
 
 }
 
