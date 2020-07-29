@@ -11,7 +11,7 @@ PLAIN='\033[0m'
 
 
 #  版本信息 用于更新脚本
-SH_VER="1.0.6"
+SH_VER="1.0.8"
 
 
 # check root
@@ -55,6 +55,7 @@ check_speedtest_servers(){
 	cat /tmp/spd_cli/1.txt | jq . > /tmp/spd_cli/newservers.txt
 	# 将国内节点剔出来
 	sed -i '/Hong\ Kong/,+6d' /tmp/spd_cli/newservers.txt
+	sed -i '/Gatchina/,+6d' /tmp/spd_cli/newservers.txt
 
 #	cat /tmp/spd_cli/newservers.txt | grep cc=\"CN\" | grep -v "Hong Kong" > /tmp/spd_cli/2.txt
 	# 提取 节点ID
@@ -172,16 +173,18 @@ if  [ ! -e '/tmp/spd_cli/speedtest' ]; then
 	chmod a+rx /tmp/spd_cli/speedtest
 fi
 
+
 # 格式化输出
 format_output(){
 	rm -f /tmp/spd_cli/format_output*
-	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/Server/ {print $2}' | sed 's/$/\//' > /tmp/spd_cli/format_output1.txt
-	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/Latency/ {print $2}' | sed 's/$/\//' > /tmp/spd_cli/format_output2.txt
-	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/Download/ {print $2}' | sed 's/$/\//' > /tmp/spd_cli/format_output3.txt
-	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/Upload/ {print $2}' | sed 's/$/\//' > /tmp/spd_cli/format_output4.txt
+	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/Server/ {print $2}'  > /tmp/spd_cli/format_output1.txt
+	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/Latency/ {print $2}' > /tmp/spd_cli/format_output2.txt
+	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/Download/ {print $2}' > /tmp/spd_cli/format_output3.txt
+	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/Upload/ {print $2}'  > /tmp/spd_cli/format_output4.txt
 	cat /tmp/spd_cli/report.txt |sed 's/ //g' | awk -F ':' '/PacketLoss/ {print $2}' > /tmp/spd_cli/format_output5.txt
 	clear
-	paste /tmp/spd_cli/format_output1.txt /tmp/spd_cli/format_output2.txt /tmp/spd_cli/format_output3.txt /tmp/spd_cli/format_output4.txt /tmp/spd_cli/format_output5.txt | sed 's/jitter/抖动/g' | sed 's/Notavailable\./不可用/g' | sed 's/(dataused//g' | sed '1 i\服务器/延迟/下载/上传（最重要）/丢包' | column -t -s ‘/’
+	paste -d / /tmp/spd_cli/format_output1.txt /tmp/spd_cli/format_output2.txt /tmp/spd_cli/format_output4.txt /tmp/spd_cli/format_output3.txt /tmp/spd_cli/format_output5.txt | sed 's/jitter/抖动/g' | sed 's/Notavailable\./不可用/g' | sed 's/(dataused//g' | sed '1 i\服务器/延迟/上传（最重要）/下载/丢包' | column -t -s ‘/’
+
 }
 
 # 5个全网节点测试
@@ -205,7 +208,7 @@ if [[ ${selection} == 1 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
-	format_output
+	#format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
@@ -235,7 +238,7 @@ if [[ ${selection} == 2 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
-	format_output
+	#format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
@@ -265,7 +268,7 @@ if [[ ${selection} == 3 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
-	format_output
+	#format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
@@ -294,7 +297,7 @@ if [[ ${selection} == 4 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
-	format_output
+	#format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
@@ -323,7 +326,7 @@ if [[ ${selection} == 5 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
-	format_output
+	#format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
@@ -352,7 +355,7 @@ if [[ ${selection} == 6 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
-	format_output
+	#format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
@@ -381,7 +384,7 @@ if [[ ${selection} == 7 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
-	format_output
+	#format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
@@ -410,7 +413,7 @@ if [[ ${selection} == 8 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
-	format_output
+	#format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
@@ -441,7 +444,7 @@ if [[ ${selection} == 9 ]]; then
 	else
 		echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 	fi
-	format_output
+	#format_output
 	echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 	echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 	cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
@@ -474,7 +477,7 @@ if [[ ${selection} == 10 ]]; then
 		else
 			echo -ne "\n     测试完成, 本次测速耗时: ${time} 秒" | tee -a /tmp/spd_cli/report.txt
 		fi
-		format_output
+		#format_output
 		echo -ne "\n     当前时间: " | tee -a /tmp/spd_cli/report.txt
 		echo $(date +%Y-%m-%d" "%H:%M:%S) | tee -a /tmp/spd_cli/report.txt
 		cat /tmp/spd_cli/report.txt >> /tmp/spd_cli/reportAll.txt
