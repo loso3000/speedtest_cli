@@ -11,7 +11,7 @@ PLAIN='\033[0m'
 
 
 #  版本信息 用于更新脚本
-SH_VER="1.0.8"
+SH_VER="1.0.9"
 
 
 # check root
@@ -19,6 +19,7 @@ SH_VER="1.0.8"
 
 #  https://www.speedtest.net/speedtest-servers-static.php  中国居然从上面消失了.....
 # https://www.speedtest.net/api/js/servers?search=China&limit=500
+# https://www.speedtest.net/api/js/servers?engine=js&search=CHINA&https_functional=true&limit=100
 
 # check wget
 if  [ ! -e '/usr/bin/wget' ]; then
@@ -148,7 +149,7 @@ echo -e "     ${GREEN}9.${PLAIN} 指定单个测试节点     "
 echo -e "     ${GREEN}10.${PLAIN} 旋转跳跃，不停的测速"
 echo ""
 echo -e "     ${GREEN}11.${PLAIN} 更新节点信息 "
-echo -e "     ${GREEN}12.${PLAIN} 展示所有节点"
+echo -e "     ${GREEN}12.${PLAIN} 展示所有节点 or 过滤节点"
 echo -e "     ${GREEN}13.${PLAIN} 查看历史测速记录"
 echo -e "     ${GREEN}14.${PLAIN} 升级脚本"
 
@@ -496,7 +497,26 @@ fi
 
 # 展示所有的国内节点
 if [[ ${selection} == 12 ]]; then
-	paste -d" ----" /tmp/spd_cli/3.txt /tmp/spd_cli/4.txt /tmp/spd_cli/5.txt
+	cat /tmp/spd_cli/6.txt
+	echo "     "
+	echo "     "
+	echo "   输入你想要查看的名称，直接回车返回  "
+	read -p "   " selection
+	if [[ -z $selection ]]; then
+		bash ./spd.sh
+	else
+		select=`cat /tmp/spd_cli/6.txt | grep -E -i $selection`
+		if [[ $select == "" ]];then
+			echo "     "
+			echo "   未找到 $selection 的任何节点    "
+			echo "     "
+		else
+			echo "     "
+			echo "$select"
+			echo "     "
+		fi
+	fi
+
 fi
 
 # 展示所有的历史记录
