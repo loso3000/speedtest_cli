@@ -11,7 +11,7 @@ PLAIN='\033[0m'
 
 
 #  版本信息 用于更新脚本
-SH_VER="1.0.10"
+SH_VER="1.0.11"
 
 
 # check root
@@ -81,7 +81,9 @@ check_speedtest_servers(){
 	cat /tmp/spd_cli/6.txt | grep -E -i 'Unicom|联通' | sed 's/ .*//g' > /tmp/spd_cli/Unicom.txt
 	# 找到 Mobile 或者包含 移动  的行
 	cat /tmp/spd_cli/6.txt | grep -E -i 'Mobile|移动|CMCC' | sed 's/ .*//g' > /tmp/spd_cli/Mobile.txt
-	cat /tmp/spd_cli/Telecom.txt | /tmp/spd_cli/Unicom.txt | /tmp/spd_cli/Mobile.txt > /tmp/spd_cli/3.txt
+	cat /tmp/spd_cli/Telecom.txt > /tmp/spd_cli/3.txt
+	cat /tmp/spd_cli/Unicom.txt >> /tmp/spd_cli/3.txt
+	cat /tmp/spd_cli/Mobile.txt >> /tmp/spd_cli/3.txt
 
 }
 
