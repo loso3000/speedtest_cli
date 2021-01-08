@@ -11,7 +11,7 @@ PLAIN='\033[0m'
 
 
 #  版本信息 用于更新脚本
-SH_VER="1.0.9"
+SH_VER="1.0.10"
 
 
 # check root
@@ -52,11 +52,13 @@ fi
 # 检查节点节点
 check_speedtest_servers(){
 	# 下载所有节点信息
-	curl --header "Content-Type:application/json" 'https://www.speedtest.net/api/js/servers?search=China&limit=500'  > /tmp/spd_cli/1.txt
+	curl --header "Content-Type:application/json" 'https://www.speedtest.net/api/js/servers?engine=js&search=china&https_functional=true&limit=500'  > /tmp/spd_cli/1.txt
+	# 将国外节点剔出去.......
+	#sed -i -E 's#(\{.+Hong\ Kong.+\}\,)?##g' /tmp/spd_cli/1.txt
+	# sed -i '/Gatchina/,+6d' /tmp/spd_cli/1.txt
+	#sed -i '#\{\"url\".+Gatchina.+\}\,#d' /tmp/spd_cli/1.txt
 	cat /tmp/spd_cli/1.txt | jq . > /tmp/spd_cli/newservers.txt
-	# 将国内节点剔出来
-	sed -i '/Hong\ Kong/,+6d' /tmp/spd_cli/newservers.txt
-	sed -i '/Gatchina/,+6d' /tmp/spd_cli/newservers.txt
+
 
 #	cat /tmp/spd_cli/newservers.txt | grep cc=\"CN\" | grep -v "Hong Kong" > /tmp/spd_cli/2.txt
 	# 提取 节点ID
@@ -79,6 +81,7 @@ check_speedtest_servers(){
 	cat /tmp/spd_cli/6.txt | grep -E -i 'Unicom|联通' | sed 's/ .*//g' > /tmp/spd_cli/Unicom.txt
 	# 找到 Mobile 或者包含 移动  的行
 	cat /tmp/spd_cli/6.txt | grep -E -i 'Mobile|移动|CMCC' | sed 's/ .*//g' > /tmp/spd_cli/Mobile.txt
+	cat /tmp/spd_cli/Telecom.txt | /tmp/spd_cli/Unicom.txt | /tmp/spd_cli/Mobile.txt > /tmp/spd_cli/3.txt
 
 }
 
